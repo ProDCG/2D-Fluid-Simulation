@@ -11,31 +11,25 @@
 #include <vector>
 #include <iostream>
 
+template <typename T> int signum(T val) { return (T(0) < val) - (val < T(0)); }
+
+
 struct Particle {
+    float radius = 1.0f;
+    float gravity = 10.0f;
     sf::Vector2f position;
     sf::Vector2f velocity;
     sf::Color color = sf::Color::White;
-    float density;
 
     Particle() = default;
-    Particle(sf::Vector2f position_, float density_)
-    :position{position_}, density{density_} {}
+    explicit Particle(sf::Vector2f position_)
+    :position{position_}, velocity{sf::Vector2f(0.0f,0.0f)} {}
+    Particle(sf::Vector2f position_, sf::Vector2f velocity_)
+    :position{position_}, velocity{velocity_} {}
 
-
-
-    [[nodiscard]]
-    sf::Vector2f getPosition() const {
-        return position;
-    }
-
-    [[nodiscard]]
-    sf::Vector2f getVelocity() const {
-        return velocity;
-    }
-
-    [[nodiscard]]
-    float getDensity() const {
-        return density;
+    void update(float dt) {
+        velocity += sf::Vector2f(0.0f, 1.0f) * gravity * dt;
+        position += velocity * dt;
     }
 };
 
@@ -43,14 +37,38 @@ class Solver {
 public:
     Solver() = default;
 
+    void update(float dt) {
+        for (auto& particle : s_particles) particle.update(dt); // update all the particles
+        checkCollisions();
+    }
+
+    [[nodiscard]]
+    std::vector<Particle> getParticles() const {
+        return s_particles;
+    }
+
+    Particle& addParticle(sf::Vector2f position, sf::Vector2f velocity) {
+        s_particles.emplace_back(position, velocity);
+        return s_particles.back();
+    }
+
 private:
-    sf::Vector2f s_gravity = {0.0, 1000.0f};
+    sf::Vector2f s_bounds = {200, 200};
 
     std::vector<Particle> s_particles;
-    float s_frame_dt = 0.0f;
-    float s_time = 0.0f;
-    uint32_t s_substeps = 8;
+    float s_coll_damp_factor = 0.5;
 
+    void checkCollisions() {
+        for (auto& particle : s_particles) {
+            if (std::abs(particle.position.x) > s_bounds.x) {
+                particle.position.x = s_bounds.x * ((float)signum(particle.position.x));
+                particle.velocity.x *= -1 * s_coll_damp_factor;
+            } else if (std::abs(particle.position.y) > s_bounds.y) {
+                particle.position.y = s_bounds.y * ((float)signum(particle.position.y));
+                particle.velocity.y *= -1 * s_coll_damp_factor;
+            }
+        }
+    }
 };
 
 #endif //INC_2D_FLUID_SIMULATION_SOLVER_H

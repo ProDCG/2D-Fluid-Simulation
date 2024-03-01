@@ -2,7 +2,6 @@
 #include <SFML/Graphics.hpp>
 
 #include <iostream>
-#include <vector>
 
 #include "renderer.h"
 #include "solver.h"
@@ -22,15 +21,18 @@ int main()
     Solver solver;
     Renderer renderer(window);
 
+    Particle particle = solver.addParticle(sf::Vector2f(100.0f,100.0f), sf::Vector2f(100.0f,0.0f));
+//    particle.setVelocity(sf::Vector2f(10, 10));
+
     sf::Clock clock;
     while (window.isOpen()) {
-        sf::Event event;
+        sf::Event event{};
         while (window.pollEvent(event)) {
             // terminate the window
             if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close();
         }
 
-        solver.update();
+        solver.update(clock.restart().asSeconds());
         window.clear(sf::Color::Black);
         renderer.render(solver);
         window.display();
