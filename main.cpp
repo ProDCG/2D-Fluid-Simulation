@@ -21,8 +21,12 @@ int main()
     Solver solver;
     Renderer renderer(window);
 
-    Particle particle = solver.addParticle(sf::Vector2f(100.0f,100.0f), sf::Vector2f(100.0f,0.0f));
-//    particle.setVelocity(sf::Vector2f(10, 10));
+//    Particle particle = solver.addParticle(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(1000.0f,500.0f));
+    for (uint32_t i = 0; i < 10; i++) {
+        for (uint32_t j = 0; j < 10; j++) {
+            solver.addParticle(sf::Vector2f(i-5, j-5), sf::Vector2f(1000.0f, 500.0f), 10.0f);
+        }
+    }
 
     sf::Clock clock;
     while (window.isOpen()) {
